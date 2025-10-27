@@ -2,11 +2,12 @@ import 'package:dio/dio.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import '../models/api_response.dart';
 import '../models/user_model.dart';
+import '../models/good_receipt_model.dart';
 
 class ApiService {
   late Dio _dio;
   String _baseUrl =
-      'http://10.100.10.136:8000/api'; // Laravel backend untuk admin DCCI - IP lokal komputer (alternative)
+      'http://10.23.184.86:8000/api'; // Laravel backend untuk admin DCCI pakai IP Local Komputer
   static const FlutterSecureStorage _storage = FlutterSecureStorage();
 
   ApiService() {
@@ -151,4 +152,143 @@ class ApiService {
   }
 
   String get baseUrl => _baseUrl;
+
+  // Scan QR Code untuk mendapatkan data Outgoing Request
+  Future<ApiResponse<ScannedOutgoingRequest>> scanOutgoingQR(String qrCode) async {
+    try {
+      print('📱 Scanning QR Code: $qrCode');
+
+      final response = await _dio.post(
+        '/scan-outgoing-qr',
+        data: {'qr_code': qrCode},
+      );
+
+      print('✅ QR Scan successful');
+      final apiResponse = ApiResponse<ScannedOutgoingRequest>.fromJson(
+        response.data,
+        (data) => ScannedOutgoingRequest.fromJson(data),
+      );
+
+      return apiResponse;
+    } on DioException catch (e) {
+      print('❌ QR Scan failed: ${e.message}');
+      return _handleError<ScannedOutgoingRequest>(e);
+    } catch (e) {
+      print('❌ QR Scan unexpected error: $e');
+      return ApiResponse<ScannedOutgoingRequest>(
+        type: 'error',
+        message: 'Unexpected error: $e'
+      );
+    }
+  }
+
+  // Create Good Receipt dari hasil scan
+  Future<ApiResponse<GoodReceipt>> createGoodReceipt(Map<String, dynamic> receiptData) async {
+    try {
+      print('📝 Creating Good Receipt...');
+
+      final response = await _dio.post(
+        '/good-receipts',
+        data: receiptData,
+      );
+
+      print('✅ Good Receipt created successfully');
+      final apiResponse = ApiResponse<GoodReceipt>.fromJson(
+        response.data,
+        (data) => GoodReceipt.fromJson(data),
+      );
+
+      return apiResponse;
+    } on DioException catch (e) {
+      print('❌ Create Good Receipt failed: ${e.message}');
+      return _handleError<GoodReceipt>(e);
+    } catch (e) {
+      print('❌ Create Good Receipt unexpected error: $e');
+      return ApiResponse<GoodReceipt>(
+        type: 'error',
+        message: 'Unexpected error: $e'
+      );
+    }
+  }
+
+  // Get all Good Receipts
+  Future<ApiResponse<List<GoodReceipt>>> getGoodReceipts() async {
+    try {
+      print('📋 Fetching Good Receipts...');
+
+      final response = await _dio.get('/good-receipts');
+
+      print('✅ Good Receipts fetched successfully');
+      final List<dynamic> receiptsJson = response.data['data'] ?? response.data;
+      final receipts = receiptsJson
+          .map((receipt) => GoodReceipt.fromJson(receipt))
+          .toList();
+
+      return ApiResponse<List<GoodReceipt>>(
+        type: 'success',
+        message: 'Good Receipts fetched successfully',
+        data: receipts,
+      );
+    } on DioException catch (e) {
+      print('❌ Fetch Good Receipts failed: ${e.message}');
+      return _handleError<List<GoodReceipt>>(e);
+    } catch (e) {
+      print('❌ Fetch Good Receipts unexpected error: $e');
+      return ApiResponse<List<GoodReceipt>>(
+        type: 'error',
+        message: 'Unexpected error: $e'
+      );
+    }
+  }
+
+  // Archive Outgoing Request (panggil setelah Good Receipt dibuat)
+  Future<ApiResponse<dynamic>> archiveOutgoingRequest(String outgoingNumber) async {
+    try {
+      print('📦 Archiving Outgoing Request: $outgoingNumber');
+
+      final response = await _dio.post(
+        '/outgoing-request/archived',
+        data: {
+          'outgoing_number': outgoingNumber,
+          'archived_by': 'DCCI Admin Mobile',
+          'archived_at': DateTime.now().toIso8601String(),
+        },
+      );
+
+      print('✅ Outgoing Request archived successfully');
+      return ApiResponse<dynamic>.fromJson(response.data, null);
+    } on DioException catch (e) {
+      print('❌ Archive Outgoing Request failed: ${e.message}');
+      return _handleError<dynamic>(e);
+    } catch (e) {
+      print('❌ Archive Outgoing Request unexpected error: $e');
+      return ApiResponse<dynamic>(
+        type: 'error',
+        message: 'Unexpected error: $e'
+      );
+    }
+  }
+
+  // Post Good Receipt ke SAP
+  Future<ApiResponse<dynamic>> postGoodReceiptToSAP(String receiptId) async {
+    try {
+      print('🔄 Posting Good Receipt to SAP: $receiptId');
+
+      final response = await _dio.post(
+        '/good-receipts/$receiptId/post-to-sap',
+      );
+
+      print('✅ Good Receipt posted to SAP successfully');
+      return ApiResponse<dynamic>.fromJson(response.data, null);
+    } on DioException catch (e) {
+      print('❌ Post to SAP failed: ${e.message}');
+      return _handleError<dynamic>(e);
+    } catch (e) {
+      print('❌ Post to SAP unexpected error: $e');
+      return ApiResponse<dynamic>(
+        type: 'error',
+        message: 'Unexpected error: $e'
+      );
+    }
+  }
 }

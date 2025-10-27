@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
+import 'qr_scanner_screen.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -172,8 +173,11 @@ class HomeScreen extends StatelessWidget {
                         Icons.qr_code_scanner,
                         Colors.green,
                         () {
-                          // Navigate to scan screen
-                          // Navigator.pushNamed(context, '/scan');
+                          Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder: (context) => const QRScannerScreen(),
+                            ),
+                          );
                         },
                       ),
                       _buildMenuCard(
