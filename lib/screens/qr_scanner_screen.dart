@@ -42,7 +42,9 @@ class _QRScannerScreenState extends State<QRScannerScreen> {
       final result = await _apiService.scanOutgoingQR(code);
       
       // Hide loading dialog
-      Navigator.of(context).pop();
+      if (Navigator.of(context).canPop()) {
+        Navigator.of(context).pop();
+      }
 
       if (result.type == 'success' && result.data != null) {
         // Navigate to Good Receipt Form with scanned data
@@ -56,15 +58,31 @@ class _QRScannerScreenState extends State<QRScannerScreen> {
           ),
         );
       } else {
-        _showErrorDialog(result.message ?? 'QR Code tidak valid atau sudah diproses');
+        _showErrorDialog(result.message.isNotEmpty ? result.message : 'QR Code tidak valid atau sudah diproses');
       }
     } catch (e) {
+      print('❌ Error in _handleQRCodeScanned: $e');
+      
       // Hide loading dialog if still showing
       if (Navigator.of(context).canPop()) {
         Navigator.of(context).pop();
       }
       
-      _showErrorDialog('Terjadi kesalahan: ${e.toString()}');
+      // More detailed error handling
+      String errorMessage = 'Terjadi kesalahan sistem';
+      
+      if (e.toString().contains('Connection refused') || 
+          e.toString().contains('Failed to connect')) {
+        errorMessage = 'Tidak dapat terhubung ke server. Pastikan koneksi internet aktif dan server API berjalan.';
+      } else if (e.toString().contains('timeout')) {
+        errorMessage = 'Koneksi timeout. Coba lagi dalam beberapa saat.';
+      } else if (e.toString().contains('404')) {
+        errorMessage = 'QR Code tidak ditemukan dalam sistem.';
+      } else if (e.toString().contains('500')) {
+        errorMessage = 'Terjadi kesalahan pada server. Silakan hubungi administrator.';
+      }
+      
+      _showErrorDialog(errorMessage);
     } finally {
       setState(() {
         _isProcessing = false;

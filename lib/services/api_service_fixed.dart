@@ -231,7 +231,7 @@ class ApiService {
       
       return ApiResponse<ScannedOutgoingRequest>(
         type: 'error',
-        message: 'QR Code tidak ditemukan di Portal Supplier atau terjadi kesalahan koneksi'
+        message: 'Terjadi kesalahan saat mengakses Portal Supplier: $e'
       );
     }
   }

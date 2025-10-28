@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
 import 'qr_scanner_screen.dart';
+import 'debug_screen.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -23,7 +24,13 @@ class HomeScreen extends StatelessWidget {
                       // Navigate to profile screen
                       break;
                     case 'settings':
-                      // Navigate to settings screen
+                      // Navigate to debug screen for troubleshooting
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const DebugScreen(),
+                        ),
+                      );
                       break;
                     case 'logout':
                       await authProvider.logout();
@@ -202,12 +209,30 @@ class HomeScreen extends StatelessWidget {
                       ),
                       _buildMenuCard(
                         context,
+                        'Debug & Test',
+                        Icons.bug_report,
+                        Colors.orange,
+                        () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const DebugScreen(),
+                            ),
+                          );
+                        },
+                      ),
+                      _buildMenuCard(
+                        context,
                         'Settings',
                         Icons.settings,
                         Colors.grey,
                         () {
-                          // Navigate to settings
-                          // Navigator.pushNamed(context, '/settings');
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const DebugScreen(),
+                            ),
+                          );
                         },
                       ),
                     ],
