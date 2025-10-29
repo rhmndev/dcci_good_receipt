@@ -14,7 +14,6 @@ class ApiService {
     'http://10.0.2.2:8000/api', // Android emulator
     'http://localhost:8000/api', // Local development
     'http://127.0.0.1:8000/api', // Local loopback
-    'http://10.23.184.86:8000/api', // Specific IP
     'http://10.100.10.136:8000/api', // New IP from logs
     'http://192.168.1.100:8000/api', // Common local network
   ];

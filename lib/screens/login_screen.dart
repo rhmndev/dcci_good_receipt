@@ -197,23 +197,13 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                     ],
                   ),
-                  child: const Center(
+                  child: Center(
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(Icons.factory, size: 48, color: Color(0xFF1976D2)),
-                        SizedBox(height: 8),
-                        Text(
-                          'PT DCCI',
-                          style: TextStyle(
-                            fontSize: 24,
-                            fontWeight: FontWeight.bold,
-                            color: Color(0xFF1976D2),
-                          ),
-                        ),
-                        Text(
-                          'Good Receipt Mobile',
-                          style: TextStyle(fontSize: 14, color: Colors.grey),
+                        Image.asset(
+                          'assets/images/Dharmabak.png',
+                          height: 120,
                         ),
                       ],
                     ),
@@ -232,7 +222,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
                         const Text(
-                          'Login Admin',
+                          'Login',
                           style: TextStyle(
                             fontSize: 28,
                             fontWeight: FontWeight.bold,
@@ -242,7 +232,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                         const SizedBox(height: 8),
                         const Text(
-                          'Masuk dengan akun admin portal DCCI',
+                          'Masuk dengan akun portal PT DCCI',
                           style: TextStyle(fontSize: 16, color: Colors.grey),
                           textAlign: TextAlign.center,
                         ),

@@ -12,15 +12,27 @@ class QRScannerScreen extends StatefulWidget {
 }
 
 class _QRScannerScreenState extends State<QRScannerScreen> {
-  MobileScannerController cameraController = MobileScannerController();
+  MobileScannerController cameraController = MobileScannerController(
+    facing: CameraFacing.back, // Default: kamera belakang
+    torchEnabled: false,
+  );
   bool _isProcessing = false;
   String? _lastScannedCode;
+  bool _isFrontCamera = false;
   final ApiService _apiService = ApiService();
 
   @override
   void dispose() {
     cameraController.dispose();
     super.dispose();
+  }
+
+  // Toggle kamera depan/belakang
+  Future<void> _switchCamera() async {
+    await cameraController.switchCamera();
+    setState(() {
+      _isFrontCamera = !_isFrontCamera;
+    });
   }
 
   Future<void> _handleQRCodeScanned(String code) async {
@@ -165,6 +177,11 @@ class _QRScannerScreenState extends State<QRScannerScreen> {
             icon: const Icon(Icons.flash_on),
             tooltip: 'Toggle Flash',
           ),
+          IconButton(
+            onPressed: _switchCamera,
+            icon: Icon(_isFrontCamera ? Icons.camera_front : Icons.camera_rear),
+            tooltip: _isFrontCamera ? 'Kamera Belakang' : 'Kamera Depan',
+          ),
         ],
       ),
       body: Column(
@@ -176,10 +193,21 @@ class _QRScannerScreenState extends State<QRScannerScreen> {
             color: Colors.blue[50],
             child: Column(
               children: [
-                Icon(
-                  Icons.qr_code_scanner,
-                  size: 48,
-                  color: Colors.blue[700],
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      Icons.qr_code_scanner,
+                      size: 48,
+                      color: Colors.blue[700],
+                    ),
+                    const SizedBox(width: 16),
+                    Icon(
+                      _isFrontCamera ? Icons.camera_front : Icons.camera_rear,
+                      size: 32,
+                      color: Colors.blue[700],
+                    ),
+                  ],
                 ),
                 const SizedBox(height: 8),
                 Text(
@@ -188,6 +216,16 @@ class _QRScannerScreenState extends State<QRScannerScreen> {
                   style: TextStyle(
                     fontSize: 14,
                     color: Colors.blue[700],
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  _isFrontCamera ? '📷 Kamera Depan' : '📷 Kamera Belakang',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.blue[900],
                   ),
                 ),
               ],
@@ -272,7 +310,7 @@ class _QRScannerScreenState extends State<QRScannerScreen> {
                     Text(
                       _isProcessing 
                           ? 'QR Code terdeteksi, sedang diproses...'
-                          : 'Pastikan QR Code terlihat jelas dan ruangan cukup terang',
+                          : 'Pastikan QR Code jelas dan ruangan cukup terang',
                       style: TextStyle(
                         fontSize: 12,
                         color: _isProcessing ? Colors.green : Colors.grey[600],
@@ -301,6 +339,13 @@ class _QRScannerScreenState extends State<QRScannerScreen> {
           ),
         ],
       ),
+      // floatingActionButton: FloatingActionButton.extended(
+      //   onPressed: _switchCamera,
+      //   backgroundColor: Colors.blue[700],
+      //   icon: Icon(_isFrontCamera ? Icons.camera_rear : Icons.camera_front),
+      //   label: Text(_isFrontCamera ? 'Kamera Belakang' : 'Kamera Depan'),
+      // ),
+      // floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
     );
   }
 
