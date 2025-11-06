@@ -18,11 +18,11 @@ class GoodReceiptFormScreen extends StatefulWidget {
 class _GoodReceiptFormScreenState extends State<GoodReceiptFormScreen> {
   final _formKey = GlobalKey<FormState>();
   final ApiService _apiService = ApiService();
-  
+
   late TextEditingController _receiptNumberController;
   late TextEditingController _receivedByController;
   late List<GoodReceiptItem> _items;
-  
+
   bool _isLoading = false;
   DateTime _receiptDate = DateTime.now();
   String _status = 'Approved';
@@ -36,11 +36,12 @@ class _GoodReceiptFormScreenState extends State<GoodReceiptFormScreen> {
   void _initializeForm() {
     // Generate receipt number
     final now = DateTime.now();
-    final receiptNumber = 'RCP-${now.year}${now.month.toString().padLeft(2, '0')}${now.day.toString().padLeft(2, '0')}-${widget.scannedOutgoingRequest.outgoingNumber.split('-').last}';
-    
+    final receiptNumber =
+        'RCP-${now.year}${now.month.toString().padLeft(2, '0')}${now.day.toString().padLeft(2, '0')}-${widget.scannedOutgoingRequest.outgoingNumber.split('-').last}';
+
     _receiptNumberController = TextEditingController(text: receiptNumber);
     _receivedByController = TextEditingController();
-    
+
     // Convert outgoing items to good receipt items
     _items = widget.scannedOutgoingRequest.items
         .map((item) => item.toGoodReceiptItem())
@@ -56,7 +57,7 @@ class _GoodReceiptFormScreenState extends State<GoodReceiptFormScreen> {
 
   Future<void> _saveGoodReceipt() async {
     if (!_formKey.currentState!.validate()) return;
-    
+
     setState(() {
       _isLoading = true;
     });
@@ -84,21 +85,24 @@ class _GoodReceiptFormScreenState extends State<GoodReceiptFormScreen> {
 
       // Create Good Receipt
       final result = await _apiService.createGoodReceipt(receiptData);
-      
+
       if (result.type == 'success' && result.data != null) {
         // Archive the outgoing request
-        await _apiService.archiveOutgoingRequest(widget.scannedOutgoingRequest.outgoingNumber);
-        
-        // Navigate to success screen
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute(
-            builder: (context) => GoodReceiptSuccessScreen(
-              goodReceipt: result.data!,
-            ),
-          ),
+        await _apiService.archiveOutgoingRequest(
+          widget.scannedOutgoingRequest.outgoingNumber,
         );
+
+        // Navigate to success screen
+        if (mounted) {
+          Navigator.of(context).pushReplacement(
+            MaterialPageRoute(
+              builder: (context) =>
+                  GoodReceiptSuccessScreen(goodReceipt: result.data!),
+            ),
+          );
+        }
       } else {
-        _showErrorDialog(result.message ?? 'Gagal menyimpan Good Receipt');
+        _showErrorDialog(result.message);
       }
     } catch (e) {
       _showErrorDialog('Terjadi kesalahan: ${e.toString()}');
@@ -131,23 +135,6 @@ class _GoodReceiptFormScreenState extends State<GoodReceiptFormScreen> {
         );
       },
     );
-  }
-
-  void _updateItemQuantity(int index, int newQuantity) {
-    setState(() {
-      _items[index] = GoodReceiptItem(
-        id: _items[index].id,
-        materialCode: _items[index].materialCode,
-        materialName: _items[index].materialName,
-        quantityPO: _items[index].quantityPO,
-        quantityDelivery: _items[index].quantityDelivery,
-        quantityReceived: newQuantity,
-        unit: _items[index].unit,
-        notes: _items[index].notes,
-        lotNumber: _items[index].lotNumber,
-        expiryDate: _items[index].expiryDate,
-      );
-    });
   }
 
   @override
@@ -187,16 +174,39 @@ class _GoodReceiptFormScreenState extends State<GoodReceiptFormScreen> {
                       ),
                     ],
                   ),
-                  const SizedBox(height: 12),
-                  _buildInfoRow('Outgoing No:', widget.scannedOutgoingRequest.outgoingNumber),
-                  _buildInfoRow('PO Number:', widget.scannedOutgoingRequest.poNumber),
-                  _buildInfoRow('Supplier:', widget.scannedOutgoingRequest.supplierName),
-                  _buildInfoRow('Customer:', widget.scannedOutgoingRequest.customerName),
-                  _buildInfoRow('Driver:', widget.scannedOutgoingRequest.driverName),
+                  const SizedBox(height: 14),
+                  _buildInfoRow(
+                    'Delivery Date:',
+                    widget.scannedOutgoingRequest.deliveryDate.toString(),
+                  ),
+                  _buildInfoRow(
+                    'Outgoing No:',
+                    widget.scannedOutgoingRequest.outgoingNumber,
+                  ),
+                  _buildInfoRow(
+                    'PO Number:',
+                    widget.scannedOutgoingRequest.poNumber,
+                  ),
+                  _buildInfoRow(
+                    'Supplier Code:',
+                    widget.scannedOutgoingRequest.supplierCode,
+                  ),
+                  _buildInfoRow(
+                    'Supplier:',
+                    widget.scannedOutgoingRequest.supplierName.toUpperCase(),
+                  ),
+                  _buildInfoRow(
+                    'Customer:',
+                    widget.scannedOutgoingRequest.customerName.toUpperCase(),
+                  ),
+                  _buildInfoRow(
+                    'Driver:',
+                    widget.scannedOutgoingRequest.driverName.toUpperCase(),
+                  ),
                 ],
               ),
             ),
-            
+
             // Form Content
             Expanded(
               child: SingleChildScrollView(
@@ -219,12 +229,22 @@ class _GoodReceiptFormScreenState extends State<GoodReceiptFormScreen> {
                               ),
                             ),
                             const SizedBox(height: 16),
-                            
+
                             TextFormField(
+                              readOnly: true,
                               controller: _receiptNumberController,
                               decoration: const InputDecoration(
-                                labelText: 'Receipt Number *',
-                                border: OutlineInputBorder(),
+                                prefixIcon: Icon(Icons.receipt_long),
+                                labelText: 'Receipt Number',
+                                border: OutlineInputBorder(
+                                  borderSide: BorderSide(
+                                    color: Colors.red,
+                                    width: 2.0,
+                                  ),
+                                  borderRadius: BorderRadius.all(
+                                    Radius.circular(4.0),
+                                  ),
+                                ),
                               ),
                               validator: (value) {
                                 if (value == null || value.isEmpty) {
@@ -234,10 +254,11 @@ class _GoodReceiptFormScreenState extends State<GoodReceiptFormScreen> {
                               },
                             ),
                             const SizedBox(height: 16),
-                            
+
                             TextFormField(
                               controller: _receivedByController,
                               decoration: const InputDecoration(
+                                prefixIcon: Icon(Icons.person),
                                 labelText: 'Diterima Oleh *',
                                 border: OutlineInputBorder(),
                               ),
@@ -249,15 +270,19 @@ class _GoodReceiptFormScreenState extends State<GoodReceiptFormScreen> {
                               },
                             ),
                             const SizedBox(height: 16),
-                            
+
                             // Receipt Date
                             InkWell(
                               onTap: () async {
                                 final date = await showDatePicker(
                                   context: context,
                                   initialDate: _receiptDate,
-                                  firstDate: DateTime.now().subtract(const Duration(days: 30)),
-                                  lastDate: DateTime.now().add(const Duration(days: 1)),
+                                  firstDate: DateTime.now().subtract(
+                                    const Duration(days: 30),
+                                  ),
+                                  lastDate: DateTime.now().add(
+                                    const Duration(days: 1),
+                                  ),
                                 );
                                 if (date != null) {
                                   setState(() {
@@ -269,7 +294,7 @@ class _GoodReceiptFormScreenState extends State<GoodReceiptFormScreen> {
                                 decoration: const InputDecoration(
                                   labelText: 'Tanggal Receipt',
                                   border: OutlineInputBorder(),
-                                  suffixIcon: Icon(Icons.calendar_today),
+                                  prefixIcon: Icon(Icons.calendar_today),
                                 ),
                                 child: Text(
                                   '${_receiptDate.day.toString().padLeft(2, '0')}/${_receiptDate.month.toString().padLeft(2, '0')}/${_receiptDate.year}',
@@ -280,9 +305,9 @@ class _GoodReceiptFormScreenState extends State<GoodReceiptFormScreen> {
                         ),
                       ),
                     ),
-                    
+
                     const SizedBox(height: 16),
-                    
+
                     // Items List
                     Card(
                       child: Padding(
@@ -295,20 +320,21 @@ class _GoodReceiptFormScreenState extends State<GoodReceiptFormScreen> {
                               style: const TextStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.bold,
+                                
                               ),
                             ),
                             const SizedBox(height: 16),
-                            
+
                             ..._items.asMap().entries.map((entry) {
-                              final index = entry.key;
                               final item = entry.value;
-                              
+
                               return Card(
                                 margin: const EdgeInsets.only(bottom: 12),
                                 child: Padding(
                                   padding: const EdgeInsets.all(12.0),
                                   child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
                                       Row(
                                         children: [
@@ -317,6 +343,7 @@ class _GoodReceiptFormScreenState extends State<GoodReceiptFormScreen> {
                                               item.materialName,
                                               style: const TextStyle(
                                                 fontWeight: FontWeight.bold,
+                                                fontSize: 14,
                                               ),
                                             ),
                                           ),
@@ -330,49 +357,182 @@ class _GoodReceiptFormScreenState extends State<GoodReceiptFormScreen> {
                                           fontSize: 12,
                                         ),
                                       ),
-                                      const SizedBox(height: 8),
-                                      
-                                      Row(
-                                        children: [
-                                          Expanded(
-                                            child: Column(
-                                              crossAxisAlignment: CrossAxisAlignment.start,
+                                      const SizedBox(height: 12),
+
+                                      // Quantity Information - Read only display
+                                      Container(
+                                        padding: const EdgeInsets.all(12),
+                                        decoration: BoxDecoration(
+                                          color: Colors.grey[50],
+                                          borderRadius: BorderRadius.circular(
+                                            8,
+                                          ),
+                                          border: Border.all(
+                                            color: Colors.grey[300]!,
+                                          ),
+                                        ),
+                                        child: Column(
+                                          children: [
+                                            Row(
                                               children: [
-                                                Text('Qty PO: ${item.quantityPO} ${item.unit}'),
-                                                Text('Qty Delivery: ${item.quantityDelivery} ${item.unit}'),
+                                                Expanded(
+                                                  child: Column(
+                                                    crossAxisAlignment:
+                                                        CrossAxisAlignment
+                                                            .start,
+                                                    children: [
+                                                      Text(
+                                                        'Qty PO',
+                                                        style: TextStyle(
+                                                          fontSize: 11,
+                                                          color:
+                                                              Colors.grey[600],
+                                                          fontWeight:
+                                                              FontWeight.w500,
+                                                        ),
+                                                      ),
+                                                      const SizedBox(height: 4),
+                                                      Text(
+                                                        '${item.quantityPO} ${item.unit}',
+                                                        style: const TextStyle(
+                                                          fontSize: 15,
+                                                          fontWeight:
+                                                              FontWeight.bold,
+                                                          color: Colors.black87,
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                ),
+                                                Container(
+                                                  width: 1,
+                                                  height: 40,
+                                                  color: Colors.grey[300],
+                                                  margin:
+                                                      const EdgeInsets.symmetric(
+                                                        horizontal: 12,
+                                                      ),
+                                                ),
+                                                Expanded(
+                                                  child: Column(
+                                                    crossAxisAlignment:
+                                                        CrossAxisAlignment
+                                                            .start,
+                                                    children: [
+                                                      Row(
+                                                        children: [
+                                                          Text(
+                                                            'Qty Received',
+                                                            style: TextStyle(
+                                                              fontSize: 11,
+                                                              color: Colors
+                                                                  .grey[600],
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .w500,
+                                                            ),
+                                                          ),
+                                                          const SizedBox(
+                                                            width: 4,
+                                                          ),
+                                                          Icon(
+                                                            Icons.check_circle,
+                                                            size: 14,
+                                                            color: Colors
+                                                                .green[600],
+                                                          ),
+                                                        ],
+                                                      ),
+                                                      const SizedBox(height: 4),
+                                                      Text(
+                                                        '${item.quantityReceived} ${item.unit}',
+                                                        style: TextStyle(
+                                                          fontSize: 15,
+                                                          fontWeight:
+                                                              FontWeight.bold,
+                                                          color:
+                                                              Colors.green[700],
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                ),
                                               ],
                                             ),
-                                          ),
-                                          Expanded(
-                                            child: TextFormField(
-                                              initialValue: item.quantityReceived.toString(),
-                                              decoration: InputDecoration(
-                                                labelText: 'Qty Received *',
-                                                suffixText: item.unit,
-                                                border: const OutlineInputBorder(),
-                                                contentPadding: const EdgeInsets.symmetric(
-                                                  horizontal: 12,
-                                                  vertical: 8,
+                                            // Quantity Sisa (Remaining)
+                                            if (item.quantityPO -
+                                                    item.quantityDelivery !=
+                                                0) ...[
+                                              const SizedBox(height: 12),
+                                              Container(
+                                                padding:
+                                                    const EdgeInsets.symmetric(
+                                                      horizontal: 12,
+                                                      vertical: 8,
+                                                    ),
+                                                decoration: BoxDecoration(
+                                                  color:
+                                                      (item.quantityPO -
+                                                              item.quantityDelivery) >
+                                                          0
+                                                      ? Colors.orange[50]
+                                                      : Colors.red[50],
+                                                  borderRadius:
+                                                      BorderRadius.circular(6),
+                                                  border: Border.all(
+                                                    color:
+                                                        (item.quantityPO -
+                                                                item.quantityDelivery) >
+                                                            0
+                                                        ? Colors.orange[200]!
+                                                        : Colors.red[200]!,
+                                                  ),
+                                                ),
+                                                child: Row(
+                                                  children: [
+                                                    Icon(
+                                                      (item.quantityPO -
+                                                                  item.quantityDelivery) >
+                                                              0
+                                                          ? Icons.info_outline
+                                                          : Icons
+                                                                .warning_amber_rounded,
+                                                      size: 16,
+                                                      color:
+                                                          (item.quantityPO -
+                                                                  item.quantityDelivery) >
+                                                              0
+                                                          ? Colors.orange[700]
+                                                          : Colors.red[700],
+                                                    ),
+                                                    const SizedBox(width: 8),
+                                                    Expanded(
+                                                      child: Text(
+                                                        (item.quantityPO -
+                                                                    item.quantityDelivery) >
+                                                                0
+                                                            ? 'Sisa: ${item.quantityPO - item.quantityDelivery} ${item.unit} belum diterima'
+                                                            : 'Kelebihan: ${(item.quantityDelivery - item.quantityPO).abs()} ${item.unit}',
+                                                        style: TextStyle(
+                                                          fontSize: 11,
+                                                          fontWeight:
+                                                              FontWeight.w600,
+                                                          color:
+                                                              (item.quantityPO -
+                                                                      item.quantityDelivery) >
+                                                                  0
+                                                              ? Colors
+                                                                    .orange[800]
+                                                              : Colors.red[800],
+                                                        ),
+                                                      ),
+                                                    ),
+                                                  ],
                                                 ),
                                               ),
-                                              keyboardType: TextInputType.number,
-                                              validator: (value) {
-                                                if (value == null || value.isEmpty) {
-                                                  return 'Wajib diisi';
-                                                }
-                                                final qty = int.tryParse(value);
-                                                if (qty == null || qty < 0) {
-                                                  return 'Quantity tidak valid';
-                                                }
-                                                return null;
-                                              },
-                                              onChanged: (value) {
-                                                final qty = int.tryParse(value) ?? 0;
-                                                _updateItemQuantity(index, qty);
-                                              },
-                                            ),
-                                          ),
-                                        ],
+                                            ],
+                                          ],
+                                        ),
                                       ),
                                     ],
                                   ),
@@ -387,7 +547,7 @@ class _GoodReceiptFormScreenState extends State<GoodReceiptFormScreen> {
                 ),
               ),
             ),
-            
+
             // Bottom Action Button
             Container(
               width: double.infinity,
@@ -442,18 +602,10 @@ class _GoodReceiptFormScreenState extends State<GoodReceiptFormScreen> {
             width: 100,
             child: Text(
               label,
-              style: const TextStyle(
-                fontWeight: FontWeight.w500,
-                fontSize: 12,
-              ),
+              style: const TextStyle(fontWeight: FontWeight.w500, fontSize: 12),
             ),
           ),
-          Expanded(
-            child: Text(
-              value,
-              style: const TextStyle(fontSize: 12),
-            ),
-          ),
+          Expanded(child: Text(value, style: const TextStyle(fontSize: 12))),
         ],
       ),
     );

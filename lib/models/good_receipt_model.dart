@@ -211,12 +211,28 @@ class OutgoingItem {
   });
 
   factory OutgoingItem.fromJson(Map<String, dynamic> json) {
+    // Parse quantity_gr (quantity in GR unit) as quantity delivery
+    // If quantity_gr is not available, fallback to quantity_delivery or quantity_conv
+    int qtyDelivery = 0;
+    
+    // Priority: quantity_gr > quantity_delivery > quantity_conv > quantity
+    if (json['quantity_gr'] != null) {
+      qtyDelivery = int.tryParse(json['quantity_gr']?.toString() ?? '0') ?? 0;
+    } else if (json['quantity_delivery'] != null) {
+      qtyDelivery = int.tryParse(json['quantity_delivery']?.toString() ?? '0') ?? 0;
+    } else if (json['quantity_conv'] != null) {
+      qtyDelivery = int.tryParse(json['quantity_conv']?.toString() ?? '0') ?? 0;
+    }
+    
+    // Parse quantity as PO quantity
+    int qtyPO = int.tryParse(json['quantity']?.toString() ?? json['quantity_po']?.toString() ?? json['quantityPO']?.toString() ?? '0') ?? 0;
+    
     return OutgoingItem(
-      materialCode: json['material_code'] ?? json['materialCode'] ?? '',
-      materialName: json['material_name'] ?? json['materialName'] ?? json['name'] ?? '',
-      quantityPO: int.tryParse(json['quantity_po']?.toString() ?? json['quantityPO']?.toString() ?? '0') ?? 0,
-      quantityDelivery: int.tryParse(json['quantity_delivery']?.toString() ?? json['quantityDelivery']?.toString() ?? '0') ?? 0,
-      unit: json['unit'] ?? json['uom_needed'] ?? '',
+      materialCode: json['material_code'] ?? json['materialCode'] ?? json['material_no'] ?? '',
+      materialName: json['material_name'] ?? json['materialName'] ?? json['material_desc'] ?? json['name'] ?? '',
+      quantityPO: qtyPO,
+      quantityDelivery: qtyDelivery,
+      unit: json['unit'] ?? json['meins'] ?? json['uom_needed'] ?? '',
       notes: json['notes'],
     );
   }
