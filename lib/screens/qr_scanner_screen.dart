@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import '../services/api_service.dart';
-// import '../models/good_receipt_model.dart';
 import 'good_receipt_form_screen.dart';
 
 class QRScannerScreen extends StatefulWidget {
@@ -13,8 +12,7 @@ class QRScannerScreen extends StatefulWidget {
 
 class _QRScannerScreenState extends State<QRScannerScreen> {
   MobileScannerController cameraController = MobileScannerController(
-    facing: CameraFacing.back, // Default: kamera belakang
-    torchEnabled: false,
+    facing: CameraFacing.back, 
   );
   bool _isProcessing = false;
   String? _lastScannedCode;
@@ -27,7 +25,6 @@ class _QRScannerScreenState extends State<QRScannerScreen> {
     super.dispose();
   }
 
-  // Toggle kamera depan/belakang
   Future<void> _switchCamera() async {
     await cameraController.switchCamera();
     setState(() {
@@ -36,7 +33,6 @@ class _QRScannerScreenState extends State<QRScannerScreen> {
   }
 
   Future<void> _handleQRCodeScanned(String code) async {
-    // Prevent multiple scans of the same code
     if (_isProcessing || code == _lastScannedCode) return;
     
     setState(() {
@@ -47,19 +43,15 @@ class _QRScannerScreenState extends State<QRScannerScreen> {
     try {
       print('🔍 Scanned QR Code: $code');
       
-      // Show loading dialog
       _showLoadingDialog();
 
-      // Call API to get outgoing request data
       final result = await _apiService.scanOutgoingQR(code);
       
-      // Hide loading dialog
       if (Navigator.of(context).canPop()) {
         Navigator.of(context).pop();
       }
 
       if (result.type == 'success' && result.data != null) {
-        // Navigate to Good Receipt Form with scanned data
         final scannedData = result.data!;
         
         Navigator.of(context).pushReplacement(
@@ -70,12 +62,18 @@ class _QRScannerScreenState extends State<QRScannerScreen> {
           ),
         );
       } else {
-        _showErrorDialog(result.message.isNotEmpty ? result.message : 'QR Code tidak valid atau sudah diproses');
+        // Check for specific error code "ALREADY_SCANNED"
+        if (result.message.contains('sudah pernah di-scan') || 
+            result.message.contains('ALREADY_SCANNED') ||
+            result.message.contains('already archived')) {
+          _showAlreadyScannedDialog(result.message);
+        } else {
+          _showErrorDialog(result.message.isNotEmpty ? result.message : 'QR Code tidak valid atau sudah diproses');
+        }
       }
     } catch (e) {
       print('❌ Error in _handleQRCodeScanned: $e');
       
-      // Hide loading dialog if still showing
       if (Navigator.of(context).canPop()) {
         Navigator.of(context).pop();
       }
@@ -138,12 +136,120 @@ class _QRScannerScreenState extends State<QRScannerScreen> {
               onPressed: () {
                 Navigator.of(context).pop();
                 setState(() {
-                  _lastScannedCode = null; // Reset untuk allow scan ulang
+                  _lastScannedCode = null;
                 });
               },
               child: const Text('OK'),
             ),
           ],
+        );
+      },
+    );
+  }
+
+  void _showAlreadyScannedDialog(String message) {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          title: Column(
+            children: [
+              Container(
+                width: 80,
+                height: 80,
+                decoration: BoxDecoration(
+                  color: Colors.orange[100],
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(
+                  Icons.warning_amber_rounded,
+                  size: 48,
+                  color: Colors.orange[700],
+                ),
+              ),
+              const SizedBox(height: 16),
+              Text(
+                'Surat Jalan Sudah Diproses',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.orange[900],
+                ),
+                textAlign: TextAlign.center,
+              ),
+            ],
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                message,
+                style: const TextStyle(fontSize: 14),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 16),
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.orange[50],
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: Colors.orange[200]!),
+                ),
+                child: Row(
+                  children: [
+                    Icon(Icons.info_outline, 
+                      color: Colors.orange[700],
+                      size: 20,
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        'Setiap Surat Jalan hanya dapat di-scan satu kali',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Colors.orange[900],
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                  setState(() {
+                    _lastScannedCode = null;
+                  });
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.orange[700],
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
+                child: const Text(
+                  'Scan QR Code Lain',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ),
+          ],
+          actionsPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
         );
       },
     );
@@ -186,7 +292,6 @@ class _QRScannerScreenState extends State<QRScannerScreen> {
       ),
       body: Column(
         children: [
-          // Header Instructions
           Container(
             width: double.infinity,
             padding: const EdgeInsets.all(16.0),
@@ -339,13 +444,6 @@ class _QRScannerScreenState extends State<QRScannerScreen> {
           ),
         ],
       ),
-      // floatingActionButton: FloatingActionButton.extended(
-      //   onPressed: _switchCamera,
-      //   backgroundColor: Colors.blue[700],
-      //   icon: Icon(_isFrontCamera ? Icons.camera_rear : Icons.camera_front),
-      //   label: Text(_isFrontCamera ? 'Kamera Belakang' : 'Kamera Depan'),
-      // ),
-      // floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
     );
   }
 

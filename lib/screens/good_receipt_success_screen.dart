@@ -14,7 +14,6 @@ class GoodReceiptSuccessScreen extends StatelessWidget {
   });
 
   Future<void> _postToSAP(BuildContext context) async {
-    // Show loading dialog
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -34,7 +33,6 @@ class GoodReceiptSuccessScreen extends StatelessWidget {
     try {
       final result = await _apiService.postGoodReceiptToSAP(goodReceipt.id);
       
-      // Hide loading dialog
       Navigator.of(context).pop();
       
       if (result.type == 'success') {
@@ -43,7 +41,6 @@ class GoodReceiptSuccessScreen extends StatelessWidget {
         _showErrorDialog(context, result.message ?? 'Gagal posting ke SAP');
       }
     } catch (e) {
-      // Hide loading dialog
       Navigator.of(context).pop();
       _showErrorDialog(context, 'Terjadi kesalahan: ${e.toString()}');
     }
