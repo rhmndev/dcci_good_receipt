@@ -76,9 +76,7 @@ class _GoodReceiptFormScreenState extends State<GoodReceiptFormScreen> {
           ),
           backgroundColor: Colors.orange[700],
           behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(8),
-          ),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
           duration: const Duration(seconds: 3),
           action: SnackBarAction(
             label: 'OK',
@@ -212,6 +210,11 @@ class _GoodReceiptFormScreenState extends State<GoodReceiptFormScreen> {
                   _buildInfoRow(
                     'Delivery Date:',
                     widget.scannedOutgoingRequest.deliveryDate.toString(),
+                  ),
+                  _buildInfoRow(
+                    'Delivery Time:',
+                    '${widget.scannedOutgoingRequest.deliveryTime.hour.toString().padLeft(2, '0')}:'
+                    '${widget.scannedOutgoingRequest.deliveryTime.minute.toString().padLeft(2, '0')}',
                   ),
                   _buildInfoRow(
                     'Outgoing No:',
@@ -354,7 +357,6 @@ class _GoodReceiptFormScreenState extends State<GoodReceiptFormScreen> {
                               style: const TextStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.bold,
-                                
                               ),
                             ),
                             const SizedBox(height: 16),

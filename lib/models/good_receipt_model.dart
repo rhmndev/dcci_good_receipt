@@ -160,6 +160,7 @@ class ScannedOutgoingRequest {
   final String supplierCode;
   final String customerName;
   final DateTime deliveryDate;
+  final DateTime deliveryTime;
   final String driverName;
   final List<OutgoingItem> items;
   final String status;
@@ -171,19 +172,51 @@ class ScannedOutgoingRequest {
     required this.supplierCode,
     required this.customerName,
     required this.deliveryDate,
+    required this.deliveryTime,
     required this.driverName,
     required this.items,
     required this.status,
   });
 
+  static DateTime _combineDateAndTime(dynamic date, dynamic time) {
+    if (date == null || date.toString().isEmpty) {
+      return DateTime.now();
+    }
+
+    final parsedDate = DateTime.tryParse(date.toString());
+    if (parsedDate == null) {
+      return DateTime.now();
+    }
+
+    if (time == null || time.toString().isEmpty) {
+      return parsedDate;
+    }
+
+    final parts = time.toString().split(':');
+    final hour = int.tryParse(parts[0]) ?? 0;
+    final minute = parts.length > 1 ? int.tryParse(parts[1]) ?? 0 : 0;
+
+    return DateTime(
+      parsedDate.year,
+      parsedDate.month,
+      parsedDate.day,
+      hour,
+      minute,
+    );
+  }
+
   factory ScannedOutgoingRequest.fromJson(Map<String, dynamic> json) {
+    final deliveryDateStr = json['delivery_date'] ?? json['deliveryDate'];
+    final deliveryTimeStr = json['delivery_time'] ?? json['deliveryTime'];
+
     return ScannedOutgoingRequest(
       outgoingNumber: json['outgoing_no'] ?? json['outgoingNumber'] ?? '',
       poNumber: json['po_number'] ?? json['poNumber'] ?? '',
       supplierName: json['supplier_name'] ?? json['supplierName'] ?? '',
       supplierCode: json['supplier_code'] ?? json['supplierCode'] ?? '',
       customerName: json['customer_name'] ?? json['customerName'] ?? '',
-      deliveryDate: DateTime.tryParse(json['delivery_date'] ?? json['deliveryDate'] ?? '') ?? DateTime.now(),
+      deliveryDate: _combineDateAndTime(deliveryDateStr, deliveryTimeStr),
+      deliveryTime: DateTime.tryParse(deliveryTimeStr ?? '') ?? DateTime.now(),
       driverName: json['driver_name'] ?? json['driverName'] ?? '',
       items: (json['items'] as List<dynamic>?)
           ?.map((item) => OutgoingItem.fromJson(item))

@@ -14,7 +14,7 @@ class ApiService {
     'http://10.0.2.2:8000/api', // Android emulator
     'http://localhost:8000/api', // Local development
     'http://127.0.0.1:8000/api', // Local loopback/localhost
-    'http://10.100.10.162:8000/api', // sesuaikan sama IP Komputer
+    'http://10.100.10.111:8000/api', // sesuaikan sama IP Komputer, lalu buka browser HP ketikan (https://IP_KOMPUTER:8000) untuk connect ke local server backend laravel (dci-ais-be)
     'http://192.168.1.100:8000/api', // Common local network
   ];
 

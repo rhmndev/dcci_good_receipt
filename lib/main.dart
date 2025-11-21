@@ -114,10 +114,9 @@ class SplashScreen extends StatelessWidget {
                   ),
                 ],
               ),
-              child: const Icon(
-                Icons.factory,
-                size: 60,
-                color: Color(0xFF1976D2),
+              child: Image.asset(
+                'assets/images/dci.png',
+                fit: BoxFit.contain,
               ),
             ),
             const SizedBox(height: 32),
