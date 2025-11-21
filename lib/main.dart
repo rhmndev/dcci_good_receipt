@@ -68,6 +68,7 @@ class MyApp extends StatelessWidget {
   }
 }
 
+// Auth Wrapper
 class AuthWrapper extends StatelessWidget {
   const AuthWrapper({super.key});
 
@@ -89,8 +90,21 @@ class AuthWrapper extends StatelessWidget {
   }
 }
 
-class SplashScreen extends StatelessWidget {
+// Splash Screen
+class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
+
+  @override
+  State<SplashScreen> createState() => _SplashScreenState();
+}
+
+class _SplashScreenState extends State<SplashScreen> {
+  @override
+  void initState() {
+    super.initState();
+    Future.delayed(const Duration(seconds: 5), () {
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
