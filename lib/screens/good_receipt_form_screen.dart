@@ -34,7 +34,6 @@ class _GoodReceiptFormScreenState extends State<GoodReceiptFormScreen> {
   }
 
   void _initializeForm() {
-    // Generate receipt number
     final now = DateTime.now();
     final receiptNumber =
         'RCP-${now.year}${now.month.toString().padLeft(2, '0')}${now.day.toString().padLeft(2, '0')}-${widget.scannedOutgoingRequest.outgoingNumber.split('-').last}';
@@ -42,7 +41,6 @@ class _GoodReceiptFormScreenState extends State<GoodReceiptFormScreen> {
     _receiptNumberController = TextEditingController(text: receiptNumber);
     _receivedByController = TextEditingController();
 
-    // Convert outgoing items to good receipt items
     _items = widget.scannedOutgoingRequest.items
         .map((item) => item.toGoodReceiptItem())
         .toList();
@@ -95,7 +93,6 @@ class _GoodReceiptFormScreenState extends State<GoodReceiptFormScreen> {
     });
 
     try {
-      // Prepare good receipt data
       final receiptData = {
         'receiptNumber': _receiptNumberController.text,
         'outgoingNumber': widget.scannedOutgoingRequest.outgoingNumber,
@@ -115,16 +112,13 @@ class _GoodReceiptFormScreenState extends State<GoodReceiptFormScreen> {
         'updatedDate': DateTime.now().toIso8601String(),
       };
 
-      // Create Good Receipt
       final result = await _apiService.createGoodReceipt(receiptData);
 
       if (result.type == 'success' && result.data != null) {
-        // Archive the outgoing request
         await _apiService.archiveOutgoingRequest(
           widget.scannedOutgoingRequest.outgoingNumber,
         );
 
-        // Navigate to success screen
         if (mounted) {
           Navigator.of(context).pushReplacement(
             MaterialPageRoute(
@@ -184,7 +178,6 @@ class _GoodReceiptFormScreenState extends State<GoodReceiptFormScreen> {
         key: _formKey,
         child: Column(
           children: [
-            // Header with Outgoing Request Info
             Container(
               width: double.infinity,
               padding: const EdgeInsets.all(16.0),
@@ -244,14 +237,12 @@ class _GoodReceiptFormScreenState extends State<GoodReceiptFormScreen> {
               ),
             ),
 
-            // Form Content
             Expanded(
               child: SingleChildScrollView(
                 padding: const EdgeInsets.all(16.0),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Receipt Information
                     Card(
                       child: Padding(
                         padding: const EdgeInsets.all(16.0),
@@ -308,7 +299,6 @@ class _GoodReceiptFormScreenState extends State<GoodReceiptFormScreen> {
                             ),
                             const SizedBox(height: 16),
 
-                            // Receipt Date
                             InkWell(
                               onTap: () async {
                                 final date = await showDatePicker(
@@ -345,7 +335,6 @@ class _GoodReceiptFormScreenState extends State<GoodReceiptFormScreen> {
 
                     const SizedBox(height: 16),
 
-                    // Items List
                     Card(
                       child: Padding(
                         padding: const EdgeInsets.all(16.0),
@@ -395,7 +384,6 @@ class _GoodReceiptFormScreenState extends State<GoodReceiptFormScreen> {
                                       ),
                                       const SizedBox(height: 12),
 
-                                      // Quantity Information - Read only display
                                       Container(
                                         padding: const EdgeInsets.all(12),
                                         decoration: BoxDecoration(
@@ -495,7 +483,6 @@ class _GoodReceiptFormScreenState extends State<GoodReceiptFormScreen> {
                                                 ),
                                               ],
                                             ),
-                                            // Quantity Sisa (Remaining)
                                             if (item.quantityPO -
                                                     item.quantityReceived !=
                                                 0) ...[
@@ -584,7 +571,6 @@ class _GoodReceiptFormScreenState extends State<GoodReceiptFormScreen> {
               ),
             ),
 
-            // Bottom Action Button
             Container(
               width: double.infinity,
               padding: const EdgeInsets.all(16.0),

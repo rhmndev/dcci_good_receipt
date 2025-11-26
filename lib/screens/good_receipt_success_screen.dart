@@ -120,7 +120,6 @@ class GoodReceiptSuccessScreen extends StatelessWidget {
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
-            // Success Icon
             Container(
               width: double.infinity,
               padding: const EdgeInsets.all(24.0),
@@ -274,10 +273,8 @@ class GoodReceiptSuccessScreen extends StatelessWidget {
             
             const SizedBox(height: 24),
             
-            // Action Buttons
             Column(
               children: [
-                // Post to SAP Button
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton.icon(
@@ -309,7 +306,6 @@ class GoodReceiptSuccessScreen extends StatelessWidget {
                 
                 const SizedBox(height: 12),
                 
-                // Scan Another Button
                 SizedBox(
                   width: double.infinity,
                   child: OutlinedButton.icon(
@@ -334,7 +330,6 @@ class GoodReceiptSuccessScreen extends StatelessWidget {
                 
                 const SizedBox(height: 12),
                 
-                // Back to Home Button
                 SizedBox(
                   width: double.infinity,
                   child: TextButton.icon(

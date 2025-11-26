@@ -62,7 +62,6 @@ class _QRScannerScreenState extends State<QRScannerScreen> {
           ),
         );
       } else {
-        // Check for specific error code "ALREADY_SCANNED"
         if (result.message.contains('sudah pernah di-scan') || 
             result.message.contains('ALREADY_SCANNED') ||
             result.message.contains('already archived')) {
@@ -72,13 +71,12 @@ class _QRScannerScreenState extends State<QRScannerScreen> {
         }
       }
     } catch (e) {
-      print('❌ Error in _handleQRCodeScanned: $e');
+      print('Error in _handleQRCodeScanned: $e');
       
       if (Navigator.of(context).canPop()) {
         Navigator.of(context).pop();
       }
       
-      // More detailed error handling
       String errorMessage = 'Terjadi kesalahan sistem';
       
       if (e.toString().contains('Connection refused') || 
@@ -337,7 +335,6 @@ class _QRScannerScreenState extends State<QRScannerScreen> {
             ),
           ),
           
-          // Scanner Area
           Expanded(
             flex: 3,
             child: Stack(
@@ -355,7 +352,6 @@ class _QRScannerScreenState extends State<QRScannerScreen> {
                   },
                 ),
                 
-                // Scanning overlay
                 Center(
                   child: Container(
                     width: 250,
@@ -397,7 +393,6 @@ class _QRScannerScreenState extends State<QRScannerScreen> {
             ),
           ),
           
-          // Bottom Instructions and Status
           Container(
             padding: const EdgeInsets.all(16.0),
             color: Colors.grey[100],
@@ -425,7 +420,6 @@ class _QRScannerScreenState extends State<QRScannerScreen> {
                 ),
                 const SizedBox(height: 12),
                 
-                // Manual Input Button
                 SizedBox(
                   width: double.infinity,
                   child: OutlinedButton.icon(

@@ -120,13 +120,25 @@ class GoodReceiptItem {
   });
 
   factory GoodReceiptItem.fromJson(Map<String, dynamic> json) {
+    int quantityReceived = 0;
+    
+    if (json['quantityReceived'] != null) {
+      quantityReceived = int.tryParse(json['quantityReceived']?.toString() ?? '0') ?? 0;
+    } else if (json['quantity_received'] != null) {
+      quantityReceived = int.tryParse(json['quantity_received']?.toString() ?? '0') ?? 0;
+    } else if (json['quantityDelivery'] != null) {
+      quantityReceived = int.tryParse(json['quantityDelivery']?.toString() ?? '0') ?? 0;
+    } else if (json['quantity_gr'] != null) {
+      quantityReceived = int.tryParse(json['quantity_gr']?.toString() ?? '0') ?? 0;
+    }
+    
     return GoodReceiptItem(
       id: json['id']?.toString() ?? '',
       materialCode: json['materialCode'] ?? json['material_code'] ?? '',
       materialName: json['materialName'] ?? json['material_name'] ?? json['name'] ?? '',
       quantityPO: int.tryParse(json['quantityPO']?.toString() ?? json['quantity_po']?.toString() ?? '0') ?? 0,
-      quantityDelivery: int.tryParse(json['quantity_gr']?.toString() ?? '0') ?? 0,
-      quantityReceived: int.tryParse(json['quantity_received']?.toString() ?? '0') ?? 0,
+      quantityDelivery: int.tryParse(json['quantityDelivery']?.toString() ?? json['quantity_delivery']?.toString() ?? json['quantity_gr']?.toString() ?? '0') ?? 0,
+      quantityReceived: quantityReceived,
       unit: json['unit'] ?? json['uom_needed'] ?? '',
       notes: json['notes'],
       lotNumber: json['lotNumber'] ?? json['lot_number'],
@@ -244,7 +256,6 @@ class OutgoingItem {
   });
 
   factory OutgoingItem.fromJson(Map<String, dynamic> json) {
-    // Parse quantity_po sebagai PO quantity (quantity awal di PO)
     int qtyPO = int.tryParse(
       json['quantity_po']?.toString() ?? 
       json['quantityPO']?.toString() ?? 
@@ -252,8 +263,6 @@ class OutgoingItem {
       '0'
     ) ?? 0;
     
-    // Parse quantity_gr sebagai quantity delivery (yang diinput supplier)
-    // Priority: quantity_gr > quantity_delivery > quantity_conv
     int qtyDelivery = int.tryParse(
       json['quantity_gr']?.toString() ?? 
       json['quantity_delivery']?.toString() ?? 
@@ -261,7 +270,6 @@ class OutgoingItem {
       '0'
     ) ?? 0;
     
-    // Fallback: jika quantity_gr tidak ada, gunakan quantity_po
     if (qtyDelivery == 0 && qtyPO > 0) {
       qtyDelivery = qtyPO;
     }
