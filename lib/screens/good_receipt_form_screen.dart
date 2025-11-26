@@ -497,7 +497,7 @@ class _GoodReceiptFormScreenState extends State<GoodReceiptFormScreen> {
                                             ),
                                             // Quantity Sisa (Remaining)
                                             if (item.quantityPO -
-                                                    item.quantityDelivery !=
+                                                    item.quantityReceived !=
                                                 0) ...[
                                               const SizedBox(height: 12),
                                               Container(
@@ -509,7 +509,7 @@ class _GoodReceiptFormScreenState extends State<GoodReceiptFormScreen> {
                                                 decoration: BoxDecoration(
                                                   color:
                                                       (item.quantityPO -
-                                                              item.quantityDelivery) >
+                                                              item.quantityReceived) >
                                                           0
                                                       ? Colors.orange[50]
                                                       : Colors.red[50],
@@ -518,7 +518,7 @@ class _GoodReceiptFormScreenState extends State<GoodReceiptFormScreen> {
                                                   border: Border.all(
                                                     color:
                                                         (item.quantityPO -
-                                                                item.quantityDelivery) >
+                                                                item.quantityReceived) >
                                                             0
                                                         ? Colors.orange[200]!
                                                         : Colors.red[200]!,
@@ -528,7 +528,7 @@ class _GoodReceiptFormScreenState extends State<GoodReceiptFormScreen> {
                                                   children: [
                                                     Icon(
                                                       (item.quantityPO -
-                                                                  item.quantityDelivery) >
+                                                                  item.quantityReceived) >
                                                               0
                                                           ? Icons.info_outline
                                                           : Icons
@@ -536,7 +536,7 @@ class _GoodReceiptFormScreenState extends State<GoodReceiptFormScreen> {
                                                       size: 16,
                                                       color:
                                                           (item.quantityPO -
-                                                                  item.quantityDelivery) >
+                                                                  item.quantityReceived) >
                                                               0
                                                           ? Colors.orange[700]
                                                           : Colors.red[700],
@@ -545,17 +545,17 @@ class _GoodReceiptFormScreenState extends State<GoodReceiptFormScreen> {
                                                     Expanded(
                                                       child: Text(
                                                         (item.quantityPO -
-                                                                    item.quantityDelivery) >
+                                                                    item.quantityReceived) >
                                                                 0
-                                                            ? 'Sisa: ${item.quantityPO - item.quantityDelivery} ${item.unit} belum diterima'
-                                                            : 'Kelebihan: ${(item.quantityDelivery - item.quantityPO).abs()} ${item.unit}',
+                                                            ? 'Sisa: ${item.quantityPO - item.quantityReceived} ${item.unit} belum diterima'
+                                                            : 'Kelebihan: ${(item.quantityReceived - item.quantityPO).abs()} ${item.unit}',
                                                         style: TextStyle(
                                                           fontSize: 11,
                                                           fontWeight:
                                                               FontWeight.w600,
                                                           color:
                                                               (item.quantityPO -
-                                                                      item.quantityDelivery) >
+                                                                      item.quantityReceived) >
                                                                   0
                                                               ? Colors
                                                                     .orange[800]

@@ -125,8 +125,8 @@ class GoodReceiptItem {
       materialCode: json['materialCode'] ?? json['material_code'] ?? '',
       materialName: json['materialName'] ?? json['material_name'] ?? json['name'] ?? '',
       quantityPO: int.tryParse(json['quantityPO']?.toString() ?? json['quantity_po']?.toString() ?? '0') ?? 0,
-      quantityDelivery: int.tryParse(json['quantityDelivery']?.toString() ?? json['quantity_delivery']?.toString() ?? '0') ?? 0,
-      quantityReceived: int.tryParse(json['quantityReceived']?.toString() ?? json['quantity_received']?.toString() ?? '0') ?? 0,
+      quantityDelivery: int.tryParse(json['quantity_gr']?.toString() ?? '0') ?? 0,
+      quantityReceived: int.tryParse(json['quantity_received']?.toString() ?? '0') ?? 0,
       unit: json['unit'] ?? json['uom_needed'] ?? '',
       notes: json['notes'],
       lotNumber: json['lotNumber'] ?? json['lot_number'],
@@ -244,21 +244,27 @@ class OutgoingItem {
   });
 
   factory OutgoingItem.fromJson(Map<String, dynamic> json) {
-    // Parse quantity_gr (quantity in GR unit) as quantity delivery
-    // If quantity_gr is not available, fallback to quantity_delivery or quantity_conv
-    int qtyDelivery = 0;
+    // Parse quantity_po sebagai PO quantity (quantity awal di PO)
+    int qtyPO = int.tryParse(
+      json['quantity_po']?.toString() ?? 
+      json['quantityPO']?.toString() ?? 
+      json['quantity']?.toString() ?? 
+      '0'
+    ) ?? 0;
     
-    // Priority: quantity_gr > quantity_delivery > quantity_conv > quantity
-    if (json['quantity_gr'] != null) {
-      qtyDelivery = int.tryParse(json['quantity_gr']?.toString() ?? '0') ?? 0;
-    } else if (json['quantity_delivery'] != null) {
-      qtyDelivery = int.tryParse(json['quantity_delivery']?.toString() ?? '0') ?? 0;
-    } else if (json['quantity_conv'] != null) {
-      qtyDelivery = int.tryParse(json['quantity_conv']?.toString() ?? '0') ?? 0;
+    // Parse quantity_gr sebagai quantity delivery (yang diinput supplier)
+    // Priority: quantity_gr > quantity_delivery > quantity_conv
+    int qtyDelivery = int.tryParse(
+      json['quantity_gr']?.toString() ?? 
+      json['quantity_delivery']?.toString() ?? 
+      json['quantity_conv']?.toString() ?? 
+      '0'
+    ) ?? 0;
+    
+    // Fallback: jika quantity_gr tidak ada, gunakan quantity_po
+    if (qtyDelivery == 0 && qtyPO > 0) {
+      qtyDelivery = qtyPO;
     }
-    
-    // Parse quantity as PO quantity
-    int qtyPO = int.tryParse(json['quantity']?.toString() ?? json['quantity_po']?.toString() ?? json['quantityPO']?.toString() ?? '0') ?? 0;
     
     return OutgoingItem(
       materialCode: json['material_code'] ?? json['materialCode'] ?? json['material_no'] ?? '',
@@ -273,7 +279,7 @@ class OutgoingItem {
   // Convert to GoodReceiptItem
   GoodReceiptItem toGoodReceiptItem() {
     return GoodReceiptItem(
-      id: DateTime.now().millisecondsSinceEpoch.toString(),
+      id: DateTime.now().toString(),
       materialCode: materialCode,
       materialName: materialName,
       quantityPO: quantityPO,
