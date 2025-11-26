@@ -28,6 +28,6 @@ flutter:
   assets:
     - assets/images/
 flutter_launcher_icons:
-  image_path: "assets/images/dci.png"
+  image_path: "assets/images/dcci.png"
   android: true
   ios: true
