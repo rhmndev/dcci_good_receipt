@@ -151,6 +151,7 @@ class GoodReceiptItem {
   Map<String, dynamic> toJson() {
     return {
       'id': id,
+      // CamelCase untuk mobile
       'materialCode': materialCode,
       'materialName': materialName,
       'quantityPO': quantityPO,
@@ -160,6 +161,18 @@ class GoodReceiptItem {
       'notes': notes,
       'lotNumber': lotNumber,
       'expiryDate': expiryDate?.toIso8601String(),
+      // Snake_case untuk web compatibility
+      'material_code': materialCode,
+      'material_name': materialName,
+      'quantity_po': quantityPO,
+      'quantity_delivery': quantityDelivery,
+      'quantity_gr': quantityReceived,
+      'quantity_needed': quantityPO,
+      'uom_needed': unit,
+      'uom_out': unit,
+      'uom': unit,
+      'lot_number': lotNumber,
+      'expiry_date': expiryDate?.toIso8601String(),
     };
   }
 }
